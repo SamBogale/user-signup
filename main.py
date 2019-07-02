@@ -7,64 +7,53 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://user-signup:JfdroYHMJvB
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 
-
-class Task(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120))
-    completed = db.Column(db.Boolean)
-
-    def __init__(self, name):
-        self.name = name
-        self.completed = False
-
-
 class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120))
+    password = db.Column(db.String(20))
+    verify = db.Column(db.String(8))
     email = db.Column(db.String(120), unique=True)
-    password = db.Column(db.String(120))
 
-    def __init__(self, email, password):
-        self.email = email
+    
+
+    def __init__(self, name,password,verify,email):
+        self.name = name
         self.password = password
+        self.verify = verify
+        self.email = email
 
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
 
-
-@app.route('/register')
+tasks = []
+@app.route('/register', methods=['POST', 'GET'])
 def register():
-    return render_template('register.html')
+    if request.method == 'POST':
+        name =request.form['text']
+        password = request.form['password']
+        verify = request.form['verify']
+        email = request.form['email']
+        existing_user = User.query.filter_by(email=email).first()
+        if not existing_user:
+            new_user = User(name, password,verify,email)
+            db.session.add(new_user)
+            db.session.commit()
+            
+            return redirect('/')
+        else:
+            # TODO - user better response messaging
+            return "<h1>Duplicate user</h1>"
 
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
 
     if request.method == 'POST':
-        task_name = request.form['task']
-        new_task = Task(task_name)
+        task_name = request.form['user']
+        new_task = User(task_name)
         db.session.add(new_task)
         db.session.commit()
-
-    tasks = Task.query.filter_by(completed=False).all()
-    completed_tasks = Task.query.filter_by(completed=True).all()
-    return render_template('form.html',title="Get It Done!", 
-        tasks=tasks, completed_tasks=completed_tasks)
-
-
-@app.route('/delete-task', methods=['POST'])
-def delete_task():
-
-    task_id = int(request.form['task-id'])
-    task = Task.query.get(task_id)
-    task.completed = True
-    db.session.add(task)
-    db.session.commit()
-
-    return redirect('/')
+    return render_template('register.html',title="User Signup!")
 
 
 if __name__ == '__main__':
