@@ -1,31 +1,42 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
-
+import cgi
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://user-signup:JfdroYHMJvBN8FFK@localhost:3306/user-signup'
 app.config['SQLALCHEMY_ECHO'] = True
+app.secret_key = 'randomsecretkey'
 db = SQLAlchemy(app)
 
 class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120))
+    name = db.Column(db.String(20))
     password = db.Column(db.String(20))
-    verify = db.Column(db.String(8))
+    verify = db.Column(db.String(20))
     email = db.Column(db.String(120), unique=True)
-
-    
-
     def __init__(self, name,password,verify,email):
         self.name = name
         self.password = password
         self.verify = verify
         self.email = email
+    def __repr__(self):
+        return '<User %r>' % self.email
+
+def is_email(email):
+    at_index = email.find('@')
+    if at_index < 0:
+        return False
+    
+    dot_index = email.rfind('.')
+    if dot_index < at_index:
+        return False
+
+    return True
+
+@app.before_request
 
 
-
-tasks = []
 @app.route('/register', methods=['POST', 'GET'])
 def register():
     if request.method == 'POST':
@@ -33,16 +44,18 @@ def register():
         password = request.form['password']
         verify = request.form['verify']
         email = request.form['email']
-        existing_user = User.query.filter_by(email=email).first()
-        if not existing_user:
-            new_user = User(name, password,verify,email)
-            db.session.add(new_user)
-            db.session.commit()
-            
+        user = User.query.filter_by(email=email).first()
+        if not is_email(email):
+            flash("{} does not look like an email".format(email))
             return redirect('/')
-        else:
-            # TODO - user better response messaging
-            return "<h1>Duplicate user</h1>"
+        #else 
+        #Save the user and do soemthing confirming the user is logged in
+        user = User(name, password,verify,email)
+        db.session.add(user)
+        db.session.commit()
+        session['user'] = user.email
+        return 'User is logged in'
+    return render_template('register.html')
 
 
 @app.route('/', methods=['POST', 'GET'])

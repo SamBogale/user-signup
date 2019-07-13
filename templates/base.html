@@ -2,11 +2,27 @@
 <html>
     <head>
         <title>{{title}}</title>
+        <style type="text/css">
+            .flashes {
+                color: red;
+            }
+        </style>
     </head>
 <body>
 
     {% block content %}
+        
     {% endblock %}
-
+    <div style='float: right;margin-right: 65em;'>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class=flashes>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endwith %}
+</div>
 </body>
 </html>

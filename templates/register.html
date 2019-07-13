@@ -3,19 +3,20 @@
 {% block content %}
     <h1>User Signup!</h1>
     <form  action = "/register" method='post'>
-        <label for="User_name"> User name</label>
-           <input type="text" name='text' />
+        <label for="User_name"> User name:
+           <input type="text" name='text' /></label>
         <br><br>
-        <label for="password">Password</label>
-           <input name="password" type="password">
+        <label for="password">Password:
+           <input name="password" type="password"/></label>
         <br><br>
-        <label for="verify">Verify Password</label>  
-           <input name="verify" type="password"> 
+        <label for="verify">Verify Password:  
+           <input name="verify" type="password"/> </label>
         <br><br> 
-        <label for="email">Email</label>  
-        <input name="email" type="email" value="{{ email }}"> 
+        <label for="email">Email :
+        <input name="email" type="email" /> </label>
         <br><br>
            <input type="submit" value='Register' />
+           
         
 
             
